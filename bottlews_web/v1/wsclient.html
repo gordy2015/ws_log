@@ -1,0 +1,130 @@
+ <!DOCTYPE html>
+<html>
+<head>
+</head>
+    <meta charset="UTF-8">
+    <style>
+        #msg{
+            width:500px; height:500px; overflow:auto; border:2px solid #000000;
+            position: fixed; bottom:1;
+    }
+    </style>
+</head>
+<body>
+    <div>
+    <p>
+        <input type="button" id="ptailf" value="开始实时查看日志">
+        <input type="button" id="noptailf" value="停止实时查看日志">
+        <input type="button" id="pcat" value="查看历史日志">
+    </p>
+    </div>
+    <div id="msg"></div>
+    <script src="http://cdn.staticfile.org/jquery/1.11.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            /* !window.WebSocket、window.MozWebSocket检测浏览器对websocket的支持*/
+            /* ws = new WebSocket 创建WebSocket的实例  注意设置对以下的websocket的地址哦*/
+            /*
+                ws.onopen  握手完成并创建TCP/IP通道，当浏览器和WebSocketServer连接成功后，会触发onopen消息
+                ws.onmessage 接收到WebSocketServer发送过来的数据时，就会触发onmessage消息，参数evt中包含server传输过来的数据;
+            */
+            if (!window.WebSocket) {
+                if (window.MozWebSocket) {
+                    window.WebSocket = window.MozWebSocket;
+                } else {
+                    $('#msg').prepend("<p>你的浏览器不支持websocket</p>");
+                }
+            }
+            ws = new WebSocket('ws://192.168.2.11:8000/websocket/');
+            ws.onopen = function(evt) {
+                $('#msg').prepend('<li style="color: red">'+ getFormatDate() + ' websocket连接成功</li>');
+            };
+            ws.onmessage = function(evt) {
+                $('#msg').append('<li>' + evt.data + '</li>');
+                //jQuery实现滚动条一直处于最底部
+                var tp = $('#msg')[0].scrollHeight;
+                $('#msg').scrollTop(tp);
+            };
+
+        });
+
+        //获取时间格式：（yyyy-MM-dd HH:mm:SS）
+        function getFormatDate(){
+                var nowDate = new Date();
+                var year = nowDate.getFullYear();
+                var month = nowDate.getMonth() + 1 < 10 ? "0" + (nowDate.getMonth() + 1) : nowDate.getMonth() + 1;
+                var date = nowDate.getDate() < 10 ? "0" + nowDate.getDate() : nowDate.getDate();
+                var hour = nowDate.getHours()< 10 ? "0" + nowDate.getHours() : nowDate.getHours();
+                var minute = nowDate.getMinutes()< 10 ? "0" + nowDate.getMinutes() : nowDate.getMinutes();
+                var second = nowDate.getSeconds()< 10 ? "0" + nowDate.getSeconds() : nowDate.getSeconds();
+                return year + "-" + month + "-" + date+" "+hour+":"+minute+":"+second;
+        }
+
+
+        $('#ptailf').click(function () {
+            if(ws.readyState == 1)
+            {
+                console.log(ws.readyState);
+                console.log('已有一个ws在运行');
+            }else {
+                console.log(ws.readyState);
+                ws = new WebSocket('ws://192.168.2.11:8000/websocket/');
+                ws.onopen = function(evt) {
+                    $('#msg').prepend('<li style="color: red">'+ getFormatDate() + ' websocket连接成功</li>');
+                };
+                ws.onmessage = function(evt) {
+                    $('#msg').append('<li>' + evt.data + '</li>');
+                    //jQuery实现滚动条一直处于最底部
+                    var tp = $('#msg')[0].scrollHeight;
+                    $('#msg').scrollTop(tp);
+                };
+            }
+        });
+
+        $('#noptailf').click(function () {
+            console.log(ws);
+            ws.close();
+            ws.onclose = function () {
+                console.log('已关闭实时查看日志');
+                $('#msg').prepend('<li style="color: red">' + getFormatDate() + ' 已断开websocket连接</li>');
+            }
+        });
+
+        $('#pcat').click(function () {
+            console.log(ws);
+            ws.close();
+            ws.onclose = function () {
+                console.log('已关闭实时查看日志');
+                $('#msg').prepend('<li style="color: red">' + getFormatDate() + ' 已断开websocket连接</li>');
+            };
+            ws2 = new WebSocket('ws://192.168.2.11:8000/websocket2/');
+            console.log(ws2);
+            ws2.onopen = function(evt) {
+                $("#msg").html('');
+                $('#msg').prepend('<li style="color: red">'+ getFormatDate() + ' 查看历史日志</li>');
+            };
+            ws2.onmessage = function(evt) {
+                $('#msg').append('<li>' + evt.data + '</li>');
+                //jQuery实现滚动条一直处于最底部
+                var tp = $('#msg')[0].scrollHeight;
+                $('#msg').scrollTop(tp);
+            };
+        });
+
+        //（服务端）连接断开时触发
+//       ws.onclose = function(e){
+//            $('#msg').innerHTML = 'offline';
+//            $('#msg').style.color = 'red';
+//       };
+//
+       //关闭页面时记得一定要关闭连接，否则服务端可能不会释放
+//       window.onunload = function(){
+//           ws = new WebSocket('ws://192.168.2.11:8000/websocket/');
+//           ws.close();
+//       };
+
+    </script>
+
+
+</body>
+</html>
