@@ -2,7 +2,7 @@
 #coding=utf-8
 import time
 import random
-log_path = 'test.log'
+log_path = 'catalina.out'
 while 1:
     with open(log_path,'a') as f:
         f.write('[%s]   %s \n' % (time.ctime(),random.random()))
