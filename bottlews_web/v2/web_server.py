@@ -61,15 +61,16 @@ def login():
     else:
         u = request.forms.get('username')
         p = request.forms.get('password')
-        print(u,p)
+        l = request.forms.get('login7days')
         if u == 'temp' and p == '123':
             s = request.environ.get('beaker.session')
-            print(s)
             s['user'] = u
             s['is_login'] = True
-
+            if l:
+                session_opts['session.cookei_expires'] = 604800
+            print(session_opts)
             s.save()
-            redirect('/wclient')
+            redirect('/log139')
         else:
             redirect('/login')
 
@@ -84,13 +85,17 @@ def auth(func):
         return func(*args, **kwargs)
     return inner
 
+@route('/')
+def index():
+    return '404 NOT FOUND'
+
 #ws客户端
-@route('/wclient')
+@route('/log139')
 @auth
-def wclient():
-    return template('wsclient.html')
+def log139():
+    return template('log139.html')
 
 dapp = default_app()
 session_app = SessionMiddleware(dapp,session_opts)
 
-run(app=session_app, host='0.0.0.0', port=8000, debug=True, server=GeventWebSocketServer)
+run(app=session_app, host='0.0.0.0', port=8000, debug=True, reloader=True, server=GeventWebSocketServer)
