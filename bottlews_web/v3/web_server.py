@@ -13,6 +13,7 @@ from bottle.ext.websocket import websocket
 from beaker.middleware import SessionMiddleware
 import time,subprocess
 from ansi2html import Ansi2HTMLConverter
+import logging
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -20,12 +21,18 @@ sys.setdefaultencoding('utf8')
 #日志文件中有时会包含 ANSI 颜色高亮（如日志级别），我们可以使用 ansi2html 包来将高亮部分转换成 HTML 代码
 conv = Ansi2HTMLConverter(inline=True)
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='wslog.log',
+                    filemode='w')
+
 #139实时查看日志
 users = set()   # 连接进来的websocket客户端集合
 @get('/websocket/', apply=[websocket])
 def chat(ws):
     users.add(ws)
-    print('add:%s'%users)
+    logging.debug('add:%s'%users)
     while True:
         msg = ws.receive()  # 接客户端的消息
         if msg:
@@ -36,14 +43,14 @@ def chat(ws):
             break
     # 如果有客户端断开连接，则踢出users集合
     users.remove(ws)
-    print('remove:%s'%users)
+    logging.debug('remove:%s'%users)
 
 #139查看历史日志最后200行
 users2 = set()   # 连接进来的websocket客户端集合
 @get('/websocket2/', apply=[websocket])
 def chat2(ws2):
     users2.add(ws2)
-    print('add2:%s'%users2)
+    logging.debug('add2:%s'%users2)
     cmd = "/bin/tail -n 200 catalina.out"
     if users2:
         popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -52,14 +59,14 @@ def chat2(ws2):
                line = conv.convert(line, full=False)
                u.send(line)
     users2.remove(ws2)
-    print('remove2:%s'%users2)
+    logging.debug('remove2:%s'%users2)
 
 #121实时查看日志
 users3 = set()   # 连接进来的websocket客户端集合
 @get('/websocket3/', apply=[websocket])
 def chat3(ws3):
     users3.add(ws3)
-    print('add3:%s'%users3)
+    logging.debug('add3:%s'%users3)
     while True:
         msg = ws3.receive()  # 接客户端的消息
         if msg:
@@ -70,14 +77,14 @@ def chat3(ws3):
             break
     # 如果有客户端断开连接，则踢出users集合
     users3.remove(ws3)
-    print('remove3:%s'%users3)
+    logging.debug('remove3:%s'%users3)
 
 # 121SSH免密查看远程机器的历史日志最后200行
 users4 = set()   # 连接进来的websocket客户端集合
 @get('/websocket4/', apply=[websocket])
 def chat4(ws4):
     users4.add(ws4)
-    print('add4:%s'%users4)
+    logging.debug('add4:%s'%users4)
     cmd = "/usr/bin/ssh -p 22 root@192.168.2.12 /bin/tail -n 200 /mnt/catalina.out"
     if users4:
         popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -86,7 +93,7 @@ def chat4(ws4):
                line = conv.convert(line, full=False)
                u.send(line)
     users4.remove(ws4)
-    print('remove4:%s'%users4)
+    logging.debug('remove4:%s'%users4)
 
 
 session_opts = {
@@ -100,6 +107,7 @@ session_opts = {
 @route('/login',method=['GET','POST'])
 def login():
     if request.method == 'GET':
+        # logging.debug('request.remote_addr: %s'%request.remote_addr)
         return template('login.html')
     else:
         u = request.forms.get('username')
