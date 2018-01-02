@@ -6,6 +6,7 @@
     pip install bottle,beaker
     pip install websocket-client
     pip install bottle-websocket
+    pip install ansi2html
 """
 from bottle import get, run,route, template,request,redirect,default_app,abort
 from bottle.ext.websocket import GeventWebSocketServer
@@ -111,7 +112,7 @@ session_opts = {
 def login():
     if request.method == 'GET':
         # logging.debug('request.remote_addr: %s'%request.remote_addr)
-        return template('login.html')
+        return template('templates/login.html')
     else:
         u = request.forms.get('username')
         p = request.forms.get('password')
@@ -160,13 +161,13 @@ def index():
 @route('/log139')
 @auth
 def log139():
-    return template('log139.html')
+    return template('templates/log139.html')
 
 #ws121客户端
 @route('/log121')
 @auth
 def log121():
-    return template('log121.html')
+    return template('templates/log121.html')
 
 dapp = default_app()
 session_app = SessionMiddleware(dapp,session_opts)
