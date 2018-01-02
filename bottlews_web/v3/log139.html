@@ -41,7 +41,7 @@
                 }
             };
 
-            ws = new WebSocket('ws://192.168.2.11:8000/websocket/');
+            ws = new WebSocket('ws://192.168.2.11:26666/websocket/');
             ws.onopen = function(evt) {
                     $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' [日志文件:/mnt/catalina.out, 点击"开始实时查看日志"或"查看当前日志最后200行"]</li>');
             };
@@ -93,7 +93,7 @@
             }else if(ws.readyState == 3) {
                 console.log(ws.readyState);
                 ws.close();
-                ws = new WebSocket('ws://192.168.2.11:8000/websocket/');
+                ws = new WebSocket('ws://192.168.2.11:26666/websocket/');
                 ws.onopen = function(evt) {
                     $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' 开始实时查看日志</li>');
                 };
@@ -123,7 +123,7 @@
                     console.log('tail已关闭实时查看日志');
                 }
             };
-            var ws2 = new WebSocket('ws://192.168.2.11:8000/websocket2/');
+            var ws2 = new WebSocket('ws://192.168.2.11:26666/websocket2/');
             ws2.onopen = function(evt) {
                 $("#msg").html('');
                 $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' 查看当前日志的最后200行</li>');

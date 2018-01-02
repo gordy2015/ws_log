@@ -4,13 +4,17 @@ import subprocess
 import time
 from websocket import create_connection
 from ansi2html import Ansi2HTMLConverter
-conv = Ansi2HTMLConverter(inline=True)
+from wsconfig import ClientLocal
+
+
+cl = ClientLocal()
 
 class Clog(object):
     def __init__(self):
-        self.r_log = 'catalina.out'
-        self.ws = 'ws://192.168.2.11:8000/websocket/'
-        self.cmd = "/bin/tailf {log_path}".format(log_path=self.r_log)
+        self.conv = Ansi2HTMLConverter(inline=True)
+        self.r_log = cl.r_log
+        self.ws = cl.ws
+        self.cmd = cl.cmd
     def tailfLog(self):
         """获取远程服务器实时日志，并发送到websocket服务端"""
         popen = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -19,8 +23,7 @@ class Clog(object):
             while True:
                 line = popen.stdout.readline().strip()  # 获取内容
                 if line:
-                    line = conv.convert(line, full=False)
-                    print(line)
+                    line = self.conv.convert(line, full=False)
                     cws.send(line)  # 把内容发送到websocket服务
 
 if __name__ == '__main__':

@@ -14,6 +14,7 @@ from beaker.middleware import SessionMiddleware
 import time,subprocess
 from ansi2html import Ansi2HTMLConverter
 import logging
+from wsconfig import WebSerconf
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -26,6 +27,8 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%a, %d %b %Y %H:%M:%S',
                     filename='wslog.log',
                     filemode='w')
+
+wsconfig = WebSerconf()
 
 #139实时查看日志
 users = set()   # 连接进来的websocket客户端集合
@@ -51,7 +54,7 @@ users2 = set()   # 连接进来的websocket客户端集合
 def chat2(ws2):
     users2.add(ws2)
     logging.debug('add2:%s'%users2)
-    cmd = "/bin/tail -n 200 catalina.out"
+    cmd = wsconfig.cmd2
     if users2:
         popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         for line in popen.stdout.readlines():  # 获取内容
@@ -85,7 +88,7 @@ users4 = set()   # 连接进来的websocket客户端集合
 def chat4(ws4):
     users4.add(ws4)
     logging.debug('add4:%s'%users4)
-    cmd = "/usr/bin/ssh -p 22 root@192.168.2.12 /bin/tail -n 200 /mnt/catalina.out"
+    cmd = wsconfig.cmd4
     if users4:
         popen = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         for line in popen.stdout.readlines():  # 获取内容
@@ -114,7 +117,7 @@ def login():
         p = request.forms.get('password')
         l = request.forms.get('login7days')
         e = request.forms.get('lenv')
-        if u == 'temp' and p == '123':
+        if u == wsconfig.nuser and p == wsconfig.npwd:
             s = request.environ.get('beaker.session')
             s['user'] = u
             s['is_login'] = True
@@ -143,8 +146,9 @@ def auth(func):
     def inner(*args, **kwargs):
         v = request.environ.get('beaker.session')
         g =v.get('is_login')
+        # nh = request.url.split('/')[0] + '//' + request.url.split('/')[2]
         if not g:
-            return redirect('/login')
+            redirect('/login')
         return func(*args, **kwargs)
     return inner
 
@@ -167,4 +171,4 @@ def log121():
 dapp = default_app()
 session_app = SessionMiddleware(dapp,session_opts)
 
-run(app=session_app, host='0.0.0.0', port=8000, debug=True, reloader=True, server=GeventWebSocketServer)
+run(app=session_app, host='0.0.0.0', port=26666, debug=True, server=GeventWebSocketServer)
