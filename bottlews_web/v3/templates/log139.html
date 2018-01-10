@@ -5,26 +5,30 @@
     <meta charset="UTF-8">
     <style>
         #msg{
-            width:800px; height:800px; overflow:auto; border:2px solid #000000;
+            width:1600px; height:800px; overflow:auto; border:2px solid #000000;
             position: fixed; bottom:1;
     }
+        li{
+            font-size: 15px;
+        }
     </style>
 </head>
 <body>
     <div>
     <p>
-        <a>[现在环境: 139]</a>
         <input type="button" id="ptailf" value="开始实时查看日志">
         <input type="button" id="noptailf" value="停止实时查看日志">
-        <input type="button" id="pcat" value="查看当前日志的最后200行">
+        <input type="button" id="pcat" value="查看当前日志的最后300行">
         <input type="button" id="pclear" value="清屏">
-        <a href="/log121"><input type="button" value="切换到121环境"></a>
+        <a href="/log121"><input type="button" value="切换到121后台日志"></a>
+        <a href="/msgate121"><input type="button" value="切换到121硬件日志"></a>
         <a href="/logout"><input type="button" value="退出登陆"></a>
+        <a>[当前环境: 139]</a>
     </p>
     </div>
     <div id="msg"></div>
     <script src="http://cdn.staticfile.org/jquery/1.11.0/jquery.min.js"></script>
-    <script src="https://cdn.bootcss.com/jquery-cookie/1.2/jquery.cookie.js"></script>
+    <script src="http://cdn.bootcss.com/jquery-cookie/1.2/jquery.cookie.js"></script>
     <script>
         $(document).ready(function() {
             /* !window.WebSocket、window.MozWebSocket检测浏览器对websocket的支持*/
@@ -43,7 +47,7 @@
 
             ws = new WebSocket('ws://192.168.2.11:26666/websocket/');
             ws.onopen = function(evt) {
-                    $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' [日志文件:/mnt/catalina.out, 点击"开始实时查看日志"或"查看当前日志最后200行"]</li>');
+                    $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' [日志文件:catalina.out, 点击"开始实时查看日志"或"查看当前日志最后300行。 如需查看历史日志请登陆服务器查看"]</li>');
             };
 
             //关闭页面时记得一定要关闭连接，否则服务端可能不会释放
@@ -91,7 +95,7 @@
                     $('#msg').scrollTop(tp);
                 };
             }else if(ws.readyState == 3) {
-                console.log(ws.readyState);
+//                console.log(ws.readyState);
                 ws.close();
                 ws = new WebSocket('ws://192.168.2.11:26666/websocket/');
                 ws.onopen = function(evt) {
@@ -126,7 +130,7 @@
             var ws2 = new WebSocket('ws://192.168.2.11:26666/websocket2/');
             ws2.onopen = function(evt) {
                 $("#msg").html('');
-                $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' 查看当前日志的最后200行</li>');
+                $('#msg').prepend('<li style="color: green">'+ getFormatDate() + ' 查看当前日志的最后300行</li>');
             };
             ws2.onmessage = function(evt) {
                 $('#msg').append('<li>' + evt.data + '</li>');

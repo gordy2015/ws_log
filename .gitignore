@@ -3,3 +3,4 @@
 *.log
 *.pyc
 /sessions_file/
+sessions_file/*
